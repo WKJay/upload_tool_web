@@ -6,27 +6,33 @@
     <title>Firmware upload</title>
 
     <style>
+        body {
+            font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, SimSun, sans-serif;
+        }
+
         .progress {
-            width: 330px;
+            box-sizing: border-box;
+            width: 100%;
             height: 20px;
-            border: 1px solid grey;
             overflow: hidden;
-            float: left;
+            background-color: #ebeef5;
             margin-right: 5px;
+            border-radius: 100px;
         }
 
         .step {
             height: 100%;
             width: 0;
-            background: rgba(21, 230, 108, 0.8);
-            transition-duration: 400ms;
+            background: #409eff;
+            text-align: right;
+            border-radius: 100px;
+            transition: width .6s ease;
         }
 
         .container {
             background-color: white;
             border: 1px solid #cccccc;
             border-radius: 8px;
-            height: 400px;
             width: 400px;
             margin: 0 auto;
             margin-top: 30vh;
@@ -34,13 +40,60 @@
         }
 
         .tip {
-            margin-top: 5px;
-            height: 120px;
-            border: 1px dotted rgb(104, 104, 104);
+            margin-top: 10px;
+            border: 1px solid rgb(104, 104, 104);
         }
+
+        .detail {
+            height: 100%;
+            margin: 15px;
+            margin-top: 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 2px;
+            width: 100%;
+        }
+
+        table>tbody>tr {
+            display: table-row;
+            height: 25px;
+            transition: background-color .25s ease;
+        }
+
+        table>tbody>tr:hover {
+            background-color: #f5f7fa;
+        }
+
+        table>tbody>tr>td {
+            vertical-align: bottom;
+            border-bottom: 1px solid #cccccc;
+            padding-bottom: 0px;
+            width: 50%;
+        }
+
+        table>tbody>tr>td:nth-child(2) {
+            color: gray;
+        }
+
+        #percentText {
+            color: white;
+            margin: 0 5px;
+            vertical-align: middle;
+            display: inline-block;
+            font-size: 12px;
+        }
+
 
         span {
             margin: 5px 0px 5px 0px
+        }
+
+        @media (max-width: 550px) {
+            .container {
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -51,31 +104,48 @@
             <h3 style="color: grey;">Firmware Upload</h3>
             <div style="margin-top: 30px;">
                 <div class='progress'>
-                    <div class="step"></div>
-                </div>
-                <div id="percentText" style="color: rgb(109, 108, 108);">
-                    0%
+                    <div class="step">
+                        <div id="percentText">0%</div>
+                    </div>
                 </div>
             </div>
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 15px;">
                 <span>Type：</span>
-                <select name="file_type" id="file_type" style="width:80px">
-                    <option value="0">固件</option>
-                    <option value="1">文件系统</option>
+                <select name="file_type" id="file_type" style="width:100px">
+                    <option value="0">firmware</option>
+                    <option value="1">filesystem</option>
                 </select>
             </div>
 
-            <form action="" style="margin-top: 5px;">
+            <form action="" style="margin-top: 10px;">
+                <span>Choose file:</span>
                 <input id="fileupload" type="file" name='icon' style="color: transparent;">
             </form>
             <div class="tip">
-                <div style="margin-left: 10px;">
-                    文件名：<span id="fileNameTip"></span><br />
-                    文件大小：<span id="fileSizeTip"></span><br />
-                    文件类型：<span id="fileTypeTip"></span><br />
-                    成功写入：<span id="fileWrSucce"></span><br />
+                <div class="detail">
+                    <table>
+                        <tr>
+                            <td>Current Version:</td>
+                            <td id="verNameTip"></td>
+                        </tr>
+                        <tr>
+                            <td>Filename</td>
+                            <td id="fileNameTip"></td>
+                        </tr>
+                        <tr>
+                            <td>Size:</td>
+                            <td id="fileSizeTip"></td>
+                        </tr>
+                        <tr>
+                            <td>Type:</td>
+                            <td id="fileTypeTip"></td>
+                        </tr>
+                        <tr>
+                            <td>Uploaded:</td>
+                            <td id="fileWrSucce"></td>
+                        </tr>
+                    </table>
                 </div>
-
             </div>
             <input id="uploadBtn" type="button" value='Upload' disabled
                 style="width: 100%; height: 50px; margin-top:10px">
@@ -161,6 +231,23 @@
         var data = new FormData(document.querySelector('form'));
         xhr.send(data);
     };
+
+    function getCurrentVersion() {
+        var xhr = new XMLHttpRequest();
+        var version_tip = document.getElementById("verNameTip");
+        xhr.open("get", '/cgi-bin/get_version');
+        xhr.onload = function () {
+            if (xhr.status == 404) {
+                version_tip.innerHTML = " ";
+            } else {
+                var resp = JSON.parse(xhr.responseText);
+                version_tip.innerHTML = resp;
+            }
+        }
+        xhr.send();
+    }
+
+    getCurrentVersion();
 </script>
 
 </html>
