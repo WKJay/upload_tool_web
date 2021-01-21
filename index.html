@@ -241,9 +241,9 @@
                 version_tip.innerHTML = " ";
             } else {
                 var resp = JSON.parse(xhr.responseText);
-                version_tip.innerHTML = resp;
+                version_tip.innerHTML = resp.version;
             }
-        }
+        };
         xhr.send();
     }
 
