@@ -55,7 +55,7 @@ function upload() {
     xhr.onload = function () {
         if (xhr.status == 404) {
             percent = 0;
-            pt.innerHTML = '0%';
+            pt.innerHTML = 'UPLOAD';
             $("pg-bar").style.width = percent;
             alert("communication error");
         } else {
@@ -67,13 +67,13 @@ function upload() {
                 } else {
                     alert("upload failed");
                     percent = 0;
-                    pt.innerHTML = '0%';
+                    pt.innerHTML = 'UPLOAD';
                     $("pg-bar").style.width = percent;
                 }
             } else {
                 alert("upload failed");
                 percent = 0;
-                pt.innerHTML = '0%';
+                pt.innerHTML = 'UPLOAD';
                 $("pg-bar").style.width = percent;
             }
         }

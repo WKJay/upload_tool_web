@@ -5,10 +5,14 @@ module.exports = function (env, argv) {
         development: true
     };
     let config = {
+        target:false,
         ...env.production ? require("./config/webpack.production") : require("./config/webpack.development"),
         entry: './src/js/index.js',
         module: {
             rules: [{
+                test: /\.txt$/,
+                use: 'raw-loader'
+            }, {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader', 'postcss-loader']
             }, {
