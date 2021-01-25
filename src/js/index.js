@@ -152,6 +152,9 @@ function getCurrentVersion() {
 function init() {
     getCurrentVersion();
     $("fileupload").onchange = checkFile;
+    $("fileupload").onclick = () => {
+        cleanChosenFiles();
+    };
     $("uploadBtn").onclick = upload;
     $("file_type").onchange = fileTypeChange;
     $("version").innerHTML = "V" + VERSION;
