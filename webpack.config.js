@@ -43,7 +43,7 @@ module.exports = function (env, argv) {
         devtool: 'source-map',
         devServer: {
             proxy: {
-                '/': 'http://192.168.31.56:80'
+                '/': 'http://192.168.1.245:80'
             }
         }
     }
