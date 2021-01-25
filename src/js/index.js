@@ -13,12 +13,13 @@ function webAlert(msg) {
 var uploadFileSize = 0;
 var percent = 0;
 var pt = $('uploadText');
+var uploadBtn = $("uploadBtn");
 
 function checkFile() {
     var file_obj = $("fileupload").files;
     var fnt = $('fileNameTip');
     var fst = $('fileSizeTip');
-    var btn = $("uploadBtn");
+
 
     setUploadBtn("reset");
     if (file_obj.length) {
@@ -40,11 +41,11 @@ function checkFile() {
             uploadFileSize = file.size;
             fst.innerHTML = file.size + " bytes";
         }
-        btn.disabled = false;
+        uploadBtn.disabled = false;
     } else {
         fnt.innerHTML = "";
         fst.innerHTML = "";
-        btn.disabled = true;
+        uploadBtn.disabled = true;
     }
 };
 
@@ -54,6 +55,7 @@ function cleanChosenFiles() {
 }
 
 function setUploadBtn(status) {
+    uploadBtn.disabled = false;
     if (status == "success") {
         $("pg-bar").style.background = "#67c23a";
         pt.innerHTML = 'UPLOAD';
@@ -67,7 +69,7 @@ function setUploadBtn(status) {
     } else if (status == "origin") {
         $("pg-bar").style.width = 0;
         $("pg-bar").style.background = "#409eff";
-        $("uploadBtn").blur();
+        uploadBtn.blur();
     }
 }
 
@@ -93,6 +95,8 @@ function upload() {
     var xhr = new XMLHttpRequest();
     var type = $("file_type");
     setUploadBtn("origin");
+    uploadBtn.disabled = true;
+
     if (type.value == '0') {
         xhr.open('post', '/upload/app');
     } else if (type.value == '1') {
@@ -155,7 +159,7 @@ function init() {
     $("fileupload").onclick = () => {
         cleanChosenFiles();
     };
-    $("uploadBtn").onclick = upload;
+    uploadBtn.onclick = upload;
     $("file_type").onchange = fileTypeChange;
     $("version").innerHTML = "V" + VERSION;
 }
