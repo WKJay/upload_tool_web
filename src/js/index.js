@@ -12,15 +12,18 @@ function webAlert(msg) {
     }, 500);
 }
 
-var uploadFileSize = 0;
-var percent = 0;
-var pt = $('uploadText');
-var uploadBtn = $("uploadBtn");
+let uploadFileSize = 0;
+let percent = 0;
+let pt = $('uploadText');
+let uploadBtn = $("uploadBtn");
+let fileBtn = $("fileBtn");
+let fileType = $("file_type");
+let fileUpload = $("fileupload");
 
 function checkFile() {
-    var file_obj = $("fileupload").files;
-    var fnt = $('fileNameTip');
-    var fst = $('fileSizeTip');
+    let file_obj = fileUpload.files;
+    let fnt = $('fileNameTip');
+    let fst = $('fileSizeTip');
 
 
     setUploadBtn("reset");
@@ -32,6 +35,7 @@ function checkFile() {
                 fileSize += i.size;
             }
             fst.innerHTML = fileSize + " bytes";
+            uploadFileSize = fileSize;
         } else {
             let file = file_obj[0];
             if (file.name.length > 20) {
@@ -52,7 +56,7 @@ function checkFile() {
 };
 
 function cleanChosenFiles() {
-    $("fileupload").value = "";
+    fileUpload.value = "";
     checkFile();
 }
 
@@ -76,26 +80,27 @@ function setUploadBtn(status) {
 }
 
 function fileTypeChange() {
-    var fntd = $('fileNameTipDisc');
-    var fstd = $('fileSizeTipDisc');
+    let fntd = $('fileNameTipDisc');
+    let fstd = $('fileSizeTipDisc');
     let type = $("file_type").value;
     cleanChosenFiles();
+    updateFileBtnValue();
     if (type == 2) {
         fntd.innerHTML = "File Count:";
         fstd.innerHTML = "Directory Size:";
-        $("fileupload").webkitdirectory = true;
-        $("fileupload").directory = true;
+        fileUpload.webkitdirectory = true;
+        fileUpload.directory = true;
     } else {
         fntd.innerHTML = "File Name:";
         fstd.innerHTML = "File Size:";
-        $("fileupload").webkitdirectory = false;
-        $("fileupload").directory = false;
+        fileUpload.webkitdirectory = false;
+        fileUpload.directory = false;
     }
 }
 
 function upload() {
-    var xhr = new XMLHttpRequest();
-    var type = $("file_type");
+    let xhr = new XMLHttpRequest();
+    let type = $("file_type");
     setUploadBtn("origin");
     uploadBtn.disabled = true;
 
@@ -112,7 +117,7 @@ function upload() {
             webAlert("function not supported");
             setUploadBtn("error");
         } else {
-            var resp = JSON.parse(xhr.responseText);
+            let resp = JSON.parse(xhr.responseText);
             if (resp.code == "0") {
                 if (resp.filesize == uploadFileSize) {
                     webAlert("upload success");
@@ -136,34 +141,42 @@ function upload() {
         webAlert("error occurs");
         setUploadBtn("error");
     };
-    var data = new FormData(document.querySelector('form'));
+    let data = new FormData(document.querySelector('form'));
     xhr.send(data);
 };
 
 function getCurrentVersion() {
-    var xhr = new XMLHttpRequest();
-    var version_tip = $("verNameTip");
+    let xhr = new XMLHttpRequest();
+    let version_tip = $("verNameTip");
     xhr.open("get", '/cgi-bin/get_version');
     xhr.onload = function () {
         if (xhr.status == 404) {
             version_tip.innerHTML = " ";
         } else {
-            var resp = JSON.parse(xhr.responseText);
+            let resp = JSON.parse(xhr.responseText);
             version_tip.innerHTML = resp.version;
         }
     };
     xhr.send();
 }
 
+function updateFileBtnValue() {
+    fileBtn.value = "Choose " + fileType.selectedOptions[0].text;
+}
+
 function init() {
     getCurrentVersion();
-    $("fileupload").onchange = checkFile;
-    $("fileupload").onclick = () => {
+    fileUpload.onchange = checkFile;
+    fileUpload.onclick = () => {
         cleanChosenFiles();
     };
-    uploadBtn.onclick = upload;
-    $("file_type").onchange = fileTypeChange;
     $("version").innerHTML = "V" + VERSION;
+    uploadBtn.onclick = upload;
+    fileType.onchange = fileTypeChange;
+    fileBtn.onclick = () => {
+        fileUpload.click();
+    }
+    updateFileBtnValue();
 }
 
 init();
