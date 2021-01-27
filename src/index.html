@@ -14,16 +14,17 @@
         </div>
         <div style="margin:10px 10px 10px 10px;">
             <div style="margin-top: 15px;">
-                <span>Type：</span>
-                <select name="file_type" id="file_type" style="width:100px">
+                <span>Type:</span>
+                <select name="fileType" id="fileType" style="width:100px">
                     <option value="0">firmware</option>
                     <option value="1">file</option>
                     <option value="2">directory</option>
                 </select>
             </div>
 
-            <form action="" style="margin-top: 10px;">
-                <input type="text" placeholder="absolute path (/root/)">
+            <form action="" style="margin-top: 5px;">
+                <span>Path:</span>
+                <input id="uploadPath" type="text" placeholder="/">
                 <input type="button" id="fileBtn" value="Choose firmware"></input>
                 <input id="fileupload" type="file" name='icon' style="color: transparent;display: none;">
             </form>

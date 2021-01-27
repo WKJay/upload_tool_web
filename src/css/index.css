@@ -97,6 +97,10 @@ span {
     margin: 5px 0px 5px 0px
 }
 
+#fileBtn {
+    margin-top: 5px;
+}
+
 #version {
     color: #757575;
     float: right;

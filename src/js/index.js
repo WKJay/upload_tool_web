@@ -17,8 +17,9 @@ let percent = 0;
 let pt = $('uploadText');
 let uploadBtn = $("uploadBtn");
 let fileBtn = $("fileBtn");
-let fileType = $("file_type");
+let fileType = $("fileType");
 let fileUpload = $("fileupload");
+let uploadPath = $("uploadPath");
 
 function checkFile() {
     let file_obj = fileUpload.files;
@@ -82,10 +83,11 @@ function setUploadBtn(status) {
 function fileTypeChange() {
     let fntd = $('fileNameTipDisc');
     let fstd = $('fileSizeTipDisc');
-    let type = $("file_type").value;
+    let typeVal = fileType.value;
     cleanChosenFiles();
     updateFileBtnValue();
-    if (type == 2) {
+    setUploadBehavior()
+    if (typeVal == 2) {
         fntd.innerHTML = "File Count:";
         fstd.innerHTML = "Directory Size:";
         fileUpload.webkitdirectory = true;
@@ -100,15 +102,14 @@ function fileTypeChange() {
 
 function upload() {
     let xhr = new XMLHttpRequest();
-    let type = $("file_type");
     setUploadBtn("origin");
     uploadBtn.disabled = true;
 
-    if (type.value == '0') {
+    if (fileType.value == '0') {
         xhr.open('post', '/upload/app');
-    } else if (type.value == '1') {
+    } else if (fileType.value == '1') {
         xhr.open('post', '/upload/file');
-    } else if (type.value == '2') {
+    } else if (fileType.value == '2') {
         xhr.open('post', '/upload/directory');
     }
 
@@ -145,6 +146,35 @@ function upload() {
     xhr.send(data);
 };
 
+function setPath() {
+    let xhr = new XMLHttpRequest();
+    xhr.open('post', '/cgi-bin/set_path');
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            let resp = JSON.parse(xhr.responseText);
+            if (resp.code == "0") {
+                upload();
+            } else {
+                webAlert("set path failed");
+                setUploadBtn("error");
+            }
+        } else {
+            webAlert("function not supported");
+            setUploadBtn("error");
+        }
+    }
+    xhr.onerror = function () {
+        webAlert("error occurs");
+        setUploadBtn("error");
+    };
+
+    xhr.send(uploadPath.value == "" ? uploadPath.placeholder : uploadPath.value);
+}
+
+function setUploadBehavior() {
+    uploadBtn.onclick = (fileType.value == 0) ? upload : setPath;
+}
+
 function getCurrentVersion() {
     let xhr = new XMLHttpRequest();
     let version_tip = $("verNameTip");
@@ -171,11 +201,11 @@ function init() {
         cleanChosenFiles();
     };
     $("version").innerHTML = "V" + VERSION;
-    uploadBtn.onclick = upload;
     fileType.onchange = fileTypeChange;
     fileBtn.onclick = () => {
         fileUpload.click();
     }
+    setUploadBehavior()
     updateFileBtnValue();
 }
 
