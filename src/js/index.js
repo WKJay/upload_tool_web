@@ -86,7 +86,6 @@ function fileTypeChange() {
     let typeVal = fileType.value;
     cleanChosenFiles();
     updateFileBtnValue();
-    setUploadBehavior()
     if (typeVal == 2) {
         fntd.innerHTML = "File Count:";
         fstd.innerHTML = "Directory Size:";
@@ -102,15 +101,16 @@ function fileTypeChange() {
 
 function upload() {
     let xhr = new XMLHttpRequest();
+    let basePath = uploadPath.value == "" ? uploadPath.placeholder : uploadPath.value;
     setUploadBtn("origin");
     uploadBtn.disabled = true;
 
     if (fileType.value == '0') {
         xhr.open('post', '/upload/app');
     } else if (fileType.value == '1') {
-        xhr.open('post', '/upload/file');
+        xhr.open('post', `/upload/file?path=${basePath}`);
     } else if (fileType.value == '2') {
-        xhr.open('post', '/upload/directory');
+        xhr.open('post', `/upload/directory?path=${basePath}`);
     }
 
     xhr.onload = function () {
@@ -146,35 +146,6 @@ function upload() {
     xhr.send(data);
 };
 
-function setPath() {
-    let xhr = new XMLHttpRequest();
-    xhr.open('post', '/cgi-bin/set_path');
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            let resp = JSON.parse(xhr.responseText);
-            if (resp.code == "0") {
-                upload();
-            } else {
-                webAlert("set path failed");
-                setUploadBtn("error");
-            }
-        } else {
-            webAlert("function not supported");
-            setUploadBtn("error");
-        }
-    }
-    xhr.onerror = function () {
-        webAlert("error occurs");
-        setUploadBtn("error");
-    };
-
-    xhr.send(uploadPath.value == "" ? uploadPath.placeholder : uploadPath.value);
-}
-
-function setUploadBehavior() {
-    uploadBtn.onclick = (fileType.value == 0) ? upload : setPath;
-}
-
 function getCurrentVersion() {
     let xhr = new XMLHttpRequest();
     let version_tip = $("verNameTip");
@@ -205,8 +176,8 @@ function init() {
     fileBtn.onclick = () => {
         fileUpload.click();
     }
-    setUploadBehavior()
     updateFileBtnValue();
+    uploadBtn.onclick = upload;
 }
 
 init();
