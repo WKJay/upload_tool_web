@@ -21,6 +21,14 @@ let fileType = $("fileType");
 let fileUpload = $("fileupload");
 let uploadPath = $("uploadPath");
 
+function isAjaxSuccess(xhr) {
+    if (xhr.status >= 200 && xhr.status < 300) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function checkFile() {
     let file_obj = fileUpload.files;
     let fnt = $('fileNameTip');
@@ -114,7 +122,7 @@ function upload() {
     }
 
     xhr.onload = function () {
-        if (xhr.status == 404) {
+        if (!isAjaxSuccess(xhr)) {
             webAlert("function not supported");
             setUploadBtn("error");
         } else {
@@ -151,8 +159,8 @@ function getCurrentVersion() {
     let version_tip = $("verNameTip");
     xhr.open("get", '/cgi-bin/get_version');
     xhr.onload = function () {
-        if (xhr.status == 404) {
-            version_tip.innerHTML = " ";
+        if (!isAjaxSuccess(xhr)) {
+            version_tip.innerHTML = "read failed";
         } else {
             let resp = JSON.parse(xhr.responseText);
             version_tip.innerHTML = resp.version;
