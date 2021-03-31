@@ -10,7 +10,7 @@ function $(id) {
 
 function webAlert(msg) {
     window.setTimeout(() => {
-        webAlert(msg);
+        alert(msg);
     }, 500);
 }
 
