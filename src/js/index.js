@@ -230,17 +230,17 @@ function fileTypeChange() {
     } else {
         checkFiledBtn.style.display = "block";
         fileListWrapper.style.display = "block";
-        if (typeVal == 2) {
-            fntd.innerHTML = "File Count:";
-            fstd.innerHTML = "Directory Size:";
-            fileUpload.webkitdirectory = true;
-            fileUpload.directory = true;
-        } else {
-            fntd.innerHTML = "File Name:";
-            fstd.innerHTML = "File Size:";
-            fileUpload.webkitdirectory = false;
-            fileUpload.directory = false;
-        }
+    }
+    if (typeVal == 2) {
+        fntd.innerHTML = "File Count:";
+        fstd.innerHTML = "Directory Size:";
+        fileUpload.webkitdirectory = true;
+        fileUpload.directory = true;
+    } else {
+        fntd.innerHTML = "File Name:";
+        fstd.innerHTML = "File Size:";
+        fileUpload.webkitdirectory = false;
+        fileUpload.directory = false;
     }
 }
 
@@ -281,10 +281,10 @@ function upload() {
     xhr.onload = function () {
         if (!isAjaxSuccess(xhr)) {
             uploadSuccess(false, "function not supported")
+            checkFiledBtn.disabled = false;
         } else {
             let resp = JSON.parse(xhr.responseText);
             if (resp.code == "0") {
-
                 if (resp.filesize == uploadFileSize) {
                     setUploadBtn("check_file");
                     //这里需要等待checklist异步更新完后才能进行检测
@@ -296,9 +296,11 @@ function upload() {
                         })
                     });
                 } else {
+                    checkFiledBtn.disabled = false;
                     uploadSuccess(false);
                 }
             } else {
+                checkFiledBtn.disabled = false;
                 uploadSuccess(false);
             }
         }
