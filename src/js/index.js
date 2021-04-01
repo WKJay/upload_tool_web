@@ -53,6 +53,16 @@ function basePathUpdate() {
     }, 10);
 }
 
+function fileChooseDisable(flag) {
+    if (flag) {
+        fileType.disabled = true;
+        fileBtn.disabled = true;
+    } else {
+        fileType.disabled = false;
+        fileBtn.disabled = false;
+    }
+}
+
 function fileListDOMUpdate() {
     let listHTML = "";
     let checkState = "";
@@ -185,6 +195,7 @@ function cleanChosenFiles() {
 
 function setUploadBtn(status) {
     uploadBtn.disabled = false;
+    fileChooseDisable(false);
     if (status == "success") {
         $("pg-bar").style.background = "#67c23a";
         pt.innerHTML = 'UPLOAD';
@@ -194,6 +205,7 @@ function setUploadBtn(status) {
     } else if (status == "check_file") {
         uploadBtn.disabled = true;
         checkFiledBtn.disabled = true;
+        fileChooseDisable(true);
         pt.innerHTML = 'CHECKING';
     } else if (status == "reset") {
         pt.innerHTML = 'UPLOAD'
@@ -256,7 +268,7 @@ function upload() {
     setUploadBtn("origin");
     uploadBtn.disabled = true;
     checkFiledBtn.disabled = true;
-    fileBtn.disabled = true;
+    fileChooseDisable(true);
 
     if (fileType.value == '0') {
         xhr.open('post', '/upload/app');
@@ -342,7 +354,7 @@ function fileUploadCheck(success, err) {
             } else {
                 success();
             }
-            fileBtn.disabled = false;
+            fileChooseDisable(false)
             fileListDOMUpdate();
 
         }
