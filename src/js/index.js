@@ -79,8 +79,8 @@ function fileListDOMUpdate() {
             }
             listHTML += `
             <tr>
-                <td title=${fileObj.path}>${filePathShow}</td>
-                <td style="color:${stateColor};text-align:right">${checkState}&nbsp;&nbsp;</td>
+                <td style="width:60%"title=${fileObj.path}>${filePathShow}</td>
+                <td style="width:40%;color:${stateColor};text-align:right">${checkState}&nbsp;&nbsp;</td>
             </tr>
             `
         }
