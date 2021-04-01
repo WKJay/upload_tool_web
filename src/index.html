@@ -45,8 +45,18 @@
                         </tr>
                     </table>
                 </div>
+
+                <div class="detail" id="fileListWrapper"
+                    style="max-height: 200px;overflow: auto;overflow-x:hidden;display: none;">
+                    <table id="fileList">
+
+                    </table>
+                </div>
             </div>
-            <button id="uploadBtn" disabled>
+            <button class="opBtn" id="checkFiledBtn" style="height: 40px;display: none;" disabled>
+                <div class="pg-content"> CHECK FILES</div>
+            </button>
+            <button class="opBtn" id="uploadBtn" disabled>
                 <div class="pg-content" id="uploadText"> UPLOAD </div>
                 <div class="pg-body">
                     <div class="pg-inner" id="pg-bar"></div>

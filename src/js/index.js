@@ -14,7 +14,9 @@ function webAlert(msg) {
     }, 500);
 }
 
-var fileCheckList = {
+let basePathInputTimer = null;
+
+let fileCheckList = {
     length: 0,
     files: []
 };
@@ -26,6 +28,9 @@ let fileBtn = $("fileBtn");
 let fileType = $("fileType");
 let fileUpload = $("fileupload");
 let uploadPath = $("uploadPath");
+let checkFiledBtn = $("checkFiledBtn");
+let fileList = $("fileList");
+let fileListWrapper = $("fileListWrapper");
 
 function isAjaxSuccess(xhr) {
     if (xhr.status >= 200 && xhr.status < 300) {
@@ -38,11 +43,65 @@ function isAjaxSuccess(xhr) {
 function fileCheckListClean() {
     fileCheckList.length = 0;
     fileCheckList.files = [];
+    fileListDOMUpdate();
+}
+
+function basePathUpdate() {
+    window.clearTimeout(basePathInputTimer);
+    basePathInputTimer = window.setTimeout(() => {
+        fileCheckListUpdate(fileUpload.files);
+    }, 10);
+}
+
+function fileListDOMUpdate() {
+    let listHTML = "";
+    let checkState = "";
+    let stateColor = "red";
+    let filePathShow = "";
+    if (fileType.value != 0) {
+        for (let i in fileCheckList.files) {
+            let fileObj = fileCheckList.files[i];
+            if (fileObj.checked == 0) { //未验证
+                checkState = "not checked"
+                stateColor = "gray"
+            } else if (fileObj.checked == 1) { //验证成功
+                checkState = "success"
+                stateColor = "green"
+            } else if (fileObj.checked == -1) { //验证失败
+                checkState = "error"
+                stateColor = "red"
+            }
+
+            if (fileObj.path.length > 25) {
+                filePathShow = fileObj.path.slice(0, 25) + "...";
+            } else {
+                filePathShow = fileObj.path;
+            }
+            listHTML += `
+            <tr>
+                <td title=${fileObj.path}>${filePathShow}</td>
+                <td style="color:${stateColor};text-align:right">${checkState}&nbsp;&nbsp;</td>
+            </tr>
+            `
+        }
+        if (fileCheckList.length > 0) {
+            checkFiledBtn.disabled = false;
+        } else {
+            checkFiledBtn.disabled = true;
+        }
+    } else {
+        listHTML = "";
+    }
+
+    fileList.innerHTML = listHTML;
+
 }
 
 function fileCheckListinvoke(cb) {
     if (fileCheckList.length != fileCheckList.files.length) {
-        window.setTimeout(fileCheckListShow, 100);
+        window.setTimeout(() => {
+            fileCheckListinvoke(cb);
+        }, 100);
     } else {
         cb();
     }
@@ -50,6 +109,7 @@ function fileCheckListinvoke(cb) {
 
 function fileCheckListUpdate(fileObj) {
     let pathBase = uploadPath.value;
+    fileCheckList.files = [];
     if (FileReader) {
         fileCheckList.length = fileObj.length;
         for (let i = 0; i < fileObj.length; i++) {
@@ -62,7 +122,7 @@ function fileCheckListUpdate(fileObj) {
                     reader.readAsArrayBuffer(file);
                     reader.onload = function () {
                         fileCheckList.files.push({
-                            path: pathBase + file.webkitRelativePath,
+                            path: pathBase + '/' + (file.webkitRelativePath == "" ? file.name : file.webkitRelativePath),
                             md5: md5(reader.result),
                             checked: 0
                         });
@@ -74,6 +134,7 @@ function fileCheckListUpdate(fileObj) {
                 webAlert("invalid file object");
             }
         }
+        fileCheckListinvoke(fileListDOMUpdate);
     } else {
         webAlert("FileReader not implemented in this browser");
     }
@@ -98,7 +159,7 @@ function checkFile() {
         } else {
             let file = file_obj[0];
             if (file.name.length > 20) {
-                fnt.innerHTML = file.name.slice(0, 15) + " ... " + file.name.slice(file_obj.name.length -
+                fnt.innerHTML = file.name.slice(0, 20) + " ... " + file.name.slice(file_obj.name.length -
                     5);
             } else {
                 fnt.innerHTML = file.name;
@@ -107,10 +168,12 @@ function checkFile() {
             fst.innerHTML = file.size + " bytes";
         }
         uploadBtn.disabled = false;
+        checkFiledBtn.disabled = false;
     } else {
         fnt.innerHTML = "";
         fst.innerHTML = "";
         uploadBtn.disabled = true;
+        checkFiledBtn.disabled = true;
     }
 };
 
@@ -130,6 +193,7 @@ function setUploadBtn(status) {
         pt.innerHTML = 'UPLOAD';
     } else if (status == "check_file") {
         uploadBtn.disabled = true;
+        checkFiledBtn.disabled = true;
         pt.innerHTML = 'CHECKING';
     } else if (status == "reset") {
         pt.innerHTML = 'UPLOAD'
@@ -148,16 +212,23 @@ function fileTypeChange() {
     let typeVal = fileType.value;
     cleanChosenFiles();
     updateFileBtnValue();
-    if (typeVal == 2) {
-        fntd.innerHTML = "File Count:";
-        fstd.innerHTML = "Directory Size:";
-        fileUpload.webkitdirectory = true;
-        fileUpload.directory = true;
+    if (typeVal == 0) {
+        checkFiledBtn.style.display = "none";
+        fileListWrapper.style.display = "none";
     } else {
-        fntd.innerHTML = "File Name:";
-        fstd.innerHTML = "File Size:";
-        fileUpload.webkitdirectory = false;
-        fileUpload.directory = false;
+        checkFiledBtn.style.display = "block";
+        fileListWrapper.style.display = "block";
+        if (typeVal == 2) {
+            fntd.innerHTML = "File Count:";
+            fstd.innerHTML = "Directory Size:";
+            fileUpload.webkitdirectory = true;
+            fileUpload.directory = true;
+        } else {
+            fntd.innerHTML = "File Name:";
+            fstd.innerHTML = "File Size:";
+            fileUpload.webkitdirectory = false;
+            fileUpload.directory = false;
+        }
     }
 }
 
@@ -184,6 +255,7 @@ function upload() {
     let basePath = uploadPath.value == "" ? uploadPath.placeholder : uploadPath.value;
     setUploadBtn("origin");
     uploadBtn.disabled = true;
+    checkFiledBtn.disabled = true;
     fileBtn.disabled = true;
 
     if (fileType.value == '0') {
@@ -248,6 +320,7 @@ function getCurrentVersion() {
 
 function fileUploadCheck(success, err) {
     let xhr = new XMLHttpRequest();
+    uploadBtn.disabled = true;
     xhr.open('post', '/cgi-bin/upload_check');
     xhr.onload = function () {
         if (!isAjaxSuccess(xhr)) {
@@ -270,8 +343,10 @@ function fileUploadCheck(success, err) {
                 success();
             }
             fileBtn.disabled = false;
+            fileListDOMUpdate();
 
         }
+        uploadBtn.disabled = false;
     };
     xhr.send(JSON.stringify(fileCheckList));
 }
@@ -293,6 +368,14 @@ function init() {
     }
     updateFileBtnValue();
     uploadBtn.onclick = upload;
+    checkFiledBtn.onclick = () => {
+        fileUploadCheck(() => {
+            webAlert("check success");
+        }, () => {
+            webAlert("check failed");
+        })
+    };
+    uploadPath.oninput = basePathUpdate;
 }
 
 init();

@@ -13,7 +13,7 @@ body {
     border-bottom: 1px solid rgba(0, 0, 0, .125);
 }
 
-#uploadBtn {
+.opBtn {
     position: relative;
     margin-top: 10px;
     height: 50px;
@@ -25,7 +25,7 @@ body {
     cursor: pointer;
 }
 
-#uploadBtn:disabled {
+.opBtn:disabled {
     background-color: rgb(239, 239, 239);
     cursor: not-allowed;
 }
