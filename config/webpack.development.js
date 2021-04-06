@@ -41,7 +41,7 @@ module.exports = {
     devtool: 'source-map',
     devServer: {
         proxy: {
-            '/': 'http://192.168.1.101:80'
+            '/': 'http://192.168.1.100:80'
         }
     }
 }

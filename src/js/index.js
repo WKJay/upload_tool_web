@@ -1,5 +1,5 @@
 import "../css/index.css"
-var md5 = require('js-md5')
+var crc32 = require('crc-32')
 
 const VERSION = "1.0.1"
 
@@ -133,7 +133,7 @@ function fileCheckListUpdate(fileObj) {
                     reader.onload = function () {
                         fileCheckList.files.push({
                             path: pathBase + '/' + (file.webkitRelativePath == "" ? file.name : file.webkitRelativePath),
-                            md5: md5(reader.result),
+                            crc: crc32.buf(new Uint8Array(reader.result)) >>> 0,
                             checked: 0
                         });
                     }
@@ -290,9 +290,9 @@ function upload() {
                     //这里需要等待checklist异步更新完后才能进行检测
                     fileCheckListinvoke(() => {
                         fileUploadCheck(() => {
-                            uploadSuccess(true, 'success');
-                        }, () => {
-                            uploadSuccess(false, 'check failed');
+                            uploadSuccess(true, 'upload successfully, all files have been checked');
+                        }, (successCnt, failCnt) => {
+                            uploadSuccess(false, failCnt + ' file(s) failed to check,please reupload');
                         })
                     });
                 } else {
@@ -335,26 +335,52 @@ function getCurrentVersion() {
 function fileUploadCheck(success, err) {
     let xhr = new XMLHttpRequest();
     uploadBtn.disabled = true;
+    /* make request */
+    let request = {
+        length: fileCheckList.length,
+        files: []
+    };
+    for (let i in fileCheckList.files) {
+        request.files.push({
+            id: i,
+            path: fileCheckList.files[i].path
+        });
+    }
+
     xhr.open('post', '/cgi-bin/upload_check');
     xhr.onload = function () {
         if (!isAjaxSuccess(xhr)) {
             err();
         } else {
             let errFlag = 0;
+            let checkFail = 0;
+            let checkSuccess = 0;
             let resp = JSON.parse(xhr.responseText);
-            for (let i in fileCheckList.files) {
-                let id = fileCheckList.files[i].path;
-                if (fileCheckList.files[i].md5 != resp.result[id]) {
-                    fileCheckList.files[i].checked = -1;
-                    errFlag = 1;
-                } else {
-                    fileCheckList.files[i].checked = 1;
+            if (resp.code == 0) {
+                let respList = {};
+                //request.files中的数组下标对应其元素的id，该id在
+                //resp.result中对应了key
+                for (let i in request.files) {
+                    respList[request.files[i].path] = resp.result[i];
                 }
+                for (let i in fileCheckList.files) {
+                    let key = fileCheckList.files[i].path;
+                    if (fileCheckList.files[i].crc != respList[key]) {
+                        fileCheckList.files[i].checked = -1;
+                        errFlag = 1;
+                    } else {
+                        fileCheckList.files[i].checked = 1;
+                        checkSuccess++;
+                    }
+                }
+                checkFail = fileCheckList.files.length - checkSuccess;
+            } else {
+                errFlag = 1;
             }
             if (errFlag) {
-                err();
+                err(checkSuccess, checkFail);
             } else {
-                success();
+                success(checkSuccess, checkFail);
             }
             fileChooseDisable(false)
             fileListDOMUpdate();
@@ -362,7 +388,7 @@ function fileUploadCheck(success, err) {
         }
         uploadBtn.disabled = false;
     };
-    xhr.send(JSON.stringify(fileCheckList));
+    xhr.send(JSON.stringify(request));
 }
 
 function updateFileBtnValue() {
@@ -384,9 +410,14 @@ function init() {
     uploadBtn.onclick = upload;
     checkFiledBtn.onclick = () => {
         fileUploadCheck(() => {
-            webAlert("check success");
-        }, () => {
-            webAlert("check failed");
+            webAlert("all files were checked successfully");
+        }, (successCnt, failCnt) => {
+            if (successCnt == undefined || failCnt == undefined) {
+                webAlert("failed to check");
+            } else {
+                webAlert(successCnt + " checked，" + failCnt + " failed to check");
+            }
+
         })
     };
     uploadPath.oninput = basePathUpdate;
