@@ -286,15 +286,20 @@ function upload() {
             let resp = JSON.parse(xhr.responseText);
             if (resp.code == "0") {
                 if (resp.filesize == uploadFileSize) {
-                    setUploadBtn("check_file");
-                    //这里需要等待checklist异步更新完后才能进行检测
-                    fileCheckListinvoke(() => {
-                        fileUploadCheck(() => {
-                            uploadSuccess(true, 'upload successfully, all files have been checked');
-                        }, (successCnt, failCnt) => {
-                            uploadSuccess(false, failCnt + ' file(s) failed to check,please reupload');
-                        })
-                    });
+                    if (fileType.value == '0') {
+                        //固件升级无需校验文件
+                        uploadSuccess(true, 'firmware uploading success');
+                    } else {
+                        setUploadBtn("check_file");
+                        //这里需要等待checklist异步更新完后才能进行检测
+                        fileCheckListinvoke(() => {
+                            fileUploadCheck(() => {
+                                uploadSuccess(true, 'upload successfully, all files have been checked');
+                            }, (successCnt, failCnt) => {
+                                uploadSuccess(false, failCnt + ' file(s) failed to check,please reupload');
+                            })
+                        });
+                    }
                 } else {
                     checkFiledBtn.disabled = false;
                     uploadSuccess(false);
