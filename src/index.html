@@ -6,7 +6,7 @@
     <title>Upload Tool</title>
 </head>
 
-<body style="background:rgb(231, 231, 231)">
+<body style="background:rgb(231, 231, 231);min-width: 420px;">
     <div class="container">
         <div class="card-head">
             <span class="c-head-content">Upload Tool</span>
@@ -15,10 +15,11 @@
         <div style="margin:10px 10px 10px 10px;">
             <div style="margin-top: 15px;">
                 <span>Type:</span>
-                <select name="fileType" id="fileType" style="width:100px">
-                    <option value="0">firmware</option>
-                    <option value="1">file</option>
-                    <option value="2">directory</option>
+                <select name="fileType" id="fileType">
+                    <option value="-1" hidden>not supported</option>
+                    <option value="0" id="firmUploadOption">firmware</option>
+                    <option value="1" id="fileUploadOption">file</option>
+                    <option value="2" id="dirUploadOption">directory</option>
                 </select>
             </div>
 
@@ -32,7 +33,7 @@
                 <div class="detail">
                     <table>
                         <tr>
-                            <td>Current Version:</td>
+                            <td>Device Version:</td>
                             <td id="verNameTip"></td>
                         </tr>
                         <tr>
@@ -53,9 +54,17 @@
                     </table>
                 </div>
             </div>
-            <button class="opBtn" id="checkFiledBtn" style="height: 40px;display: none;" disabled>
-                <div class="pg-content"> CHECK FILES</div>
-            </button>
+            <div id="diskGroup">
+                
+            </div>
+            <div class="opBtnGroup">
+                <button class="opBtn" id="cleanDiskBtn" style="display: none;">
+                    <div class="pg-content"> CLEAN DISK</div>
+                </button>
+                <button class="opBtn" id="checkFiledBtn" style="display: none;" disabled>
+                    <div class="pg-content"> CHECK FILES</div>
+                </button>
+            </div>
             <button class="opBtn" id="uploadBtn" disabled>
                 <div class="pg-content" id="uploadText"> UPLOAD </div>
                 <div class="pg-body">

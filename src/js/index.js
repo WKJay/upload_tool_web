@@ -1,4 +1,5 @@
 import "../css/index.css"
+import waxios from "./waxios";
 var crc32 = require('crc-32')
 
 const VERSION = "1.0.1"
@@ -16,6 +17,15 @@ function webAlert(msg) {
 
 let basePathInputTimer = null;
 
+let deviceSupport = {
+    firmwareupload: false,
+    fileupload: false,
+    directoryupload: false,
+    diskclean: false,
+    diskfree: false,
+    filecheck: false,
+    filelist: false
+}
 let fileCheckList = {
     length: 0,
     files: []
@@ -322,19 +332,85 @@ function upload() {
     xhr.send(data);
 };
 
-function getCurrentVersion() {
-    let xhr = new XMLHttpRequest();
+function handleDeviceSupport() {
+    let _ds = deviceSupport;
+    if (!_ds.directoryupload) {
+        $('dirUploadOption').style.display = 'none'
+    } else {
+        fileType.value = "2"
+    }
+    if (!_ds.fileupload) {
+        $('fileUploadOption').style.display = 'none'
+    } else {
+        fileType.value = "1"
+    }
+    if (!_ds.firmwareupload) {
+        $('firmUploadOption').style.display = 'none'
+    } else {
+        fileType.value = "0"
+    }
+
+    if (_ds.diskclean) $('cleanDiskBtn').style.display = 'unset'
+    if (_ds.filecheck) $('checkFiledBtn').style.display = 'unset'
+    updateFileBtnValue()
+}
+
+function handshake() {
     let version_tip = $("verNameTip");
-    xhr.open("get", '/cgi-bin/get_version');
-    xhr.onload = function () {
-        if (!isAjaxSuccess(xhr)) {
+    waxios({
+        method: 'get',
+        url: '/cgi-bin/handshake',
+        success: (data) => {
+            if (data.code == 0) {
+                version_tip.innerHTML = data.handshake.version;
+
+                if (data.handshake.support_firmwareupload != null) deviceSupport.firmwareupload = data.handshake.support_firmwareupload
+                if (data.handshake.support_fileupload != null) deviceSupport.fileupload = data.handshake.support_fileupload
+                if (data.handshake.support_directoryupload != null) deviceSupport.directoryupload = data.handshake.support_directoryupload
+                if (data.handshake.support_diskclean != null) deviceSupport.diskclean = data.handshake.support_diskclean
+                if (data.handshake.support_diskfree != null) deviceSupport.diskfree = data.handshake.support_diskfree
+                if (data.handshake.support_filecheck != null) deviceSupport.filecheck = data.handshake.support_filecheck
+                if (data.handshake.support_filelist != null) deviceSupport.filelist = data.handshake.support_filelist
+
+                handleDeviceSupport()
+            } else {
+                version_tip.innerHTML = "read failed";
+            }
+        },
+        error: () => {
             version_tip.innerHTML = "read failed";
-        } else {
-            let resp = JSON.parse(xhr.responseText);
-            version_tip.innerHTML = resp.version;
         }
-    };
-    xhr.send();
+    })
+}
+
+function getDiskFree() {
+    let diskGroupInnerHTML = ''
+    waxios({
+        method: 'get',
+        url: '/cgi-bin/get_diskfree',
+        success: (data) => {
+            if (data.code == 0) {
+                for (let _i in data.disks) {
+                    let used = data.disks[_i].total - data.disks[_i].free
+                    let usedPercentage = Math.ceil(used / data.disks[_i].total * 100)
+                    diskGroupInnerHTML+=(`
+                    <div class="progressWrapper">
+                        <span>
+                            ${data.disks[_i].name}
+                        </span>
+                        <div class="progress">
+                            <div class="progressbar" style="width:${usedPercentage}%;">
+                            &nbsp; ${usedPercentage}% &nbsp;
+                            </div>
+                        </div>
+                    </div>
+                    `)
+                }
+                $('diskGroup').innerHTML = diskGroupInnerHTML
+            }
+        }
+    })
+
 }
 
 function fileUploadCheck(success, err) {
@@ -397,11 +473,19 @@ function fileUploadCheck(success, err) {
 }
 
 function updateFileBtnValue() {
-    fileBtn.value = "Choose " + fileType.selectedOptions[0].text;
+    if (fileType.selectedOptions[0].value == "-1") {
+        fileBtn.value = "Disabled"
+        fileBtn.style.display = 'none'
+    } else {
+        fileBtn.value = "Choose " + fileType.selectedOptions[0].text;
+        fileBtn.style.display = 'unset'
+    }
+
 }
 
 function init() {
-    getCurrentVersion();
+    handshake();
+    getDiskFree();
     fileUpload.onchange = checkFile;
     fileUpload.onclick = () => {
         cleanChosenFiles();
