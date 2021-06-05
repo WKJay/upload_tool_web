@@ -487,18 +487,39 @@ function updateFileBtnValue() {
 
 }
 
+function diskClean() {
+    let ret = window.prompt('This action cannot be undone.\nThis will permanently clean the whole disk and lose all data.\nPlease type the name of the disk to confirm.')
+    if (ret != null && ret != "") {
+        waxios({
+            method: 'post',
+            url: '/cgi-bin/diskclean',
+            timeout: 10000,
+            data: {
+                disk_name: ret
+            },
+            success: (data) => {
+                if (data.code == 0) {
+                    alert("clean" + ret + "success")
+                } else {
+                    alert(data.msg)
+                }
+            }
+        })
+    }
+}
+
 function init() {
     handshake()
     getDiskFree()
-    window.setInterval(getDiskFree, 2000)
-    fileUpload.onchange = checkFile;
+    diskFreeTimer = window.setInterval(getDiskFree, 2000)
+    fileUpload.onchange = checkFile
     fileUpload.onclick = () => {
-        cleanChosenFiles();
+        cleanChosenFiles()
     };
     $("version").innerHTML = "V" + VERSION;
-    fileType.onchange = fileTypeChange;
+    fileType.onchange = fileTypeChange
     fileBtn.onclick = () => {
-        fileUpload.click();
+        fileUpload.click()
     }
     updateFileBtnValue();
     uploadBtn.onclick = upload;
@@ -514,7 +535,8 @@ function init() {
 
         })
     };
-    uploadPath.oninput = basePathUpdate;
+    cleanDiskBtn.el.onclick = diskClean
+    uploadPath.oninput = basePathUpdate
 }
 
 window.onload = () => {

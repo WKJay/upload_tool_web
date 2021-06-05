@@ -19,6 +19,6 @@ export default function wasiox(options) {
             }
         }
     }
-    if (options.data) xhr.send(data)
+    if (options.data) xhr.send(JSON.stringify(options.data))
     else xhr.send()
 }
