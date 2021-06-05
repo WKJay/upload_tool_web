@@ -1,21 +1,25 @@
 import "../css/index.css"
-import waxios from "./waxios";
+import waxios from "./waxios"
+import {
+    toolBtn,
+    diskGroup
+} from "./domClass"
 var crc32 = require('crc-32')
 
 const VERSION = "1.0.1"
 
 
 function $(id) {
-    return document.getElementById(id);
+    return document.getElementById(id)
 }
 
 function webAlert(msg) {
     window.setTimeout(() => {
-        alert(msg);
+        alert(msg)
     }, 500);
 }
 
-let basePathInputTimer = null;
+let basePathInputTimer = null
 
 let deviceSupport = {
     firmwareupload: false,
@@ -32,21 +36,27 @@ let fileCheckList = {
 };
 let uploadFileSize = 0;
 let percent = 0;
-let pt = $('uploadText');
-let uploadBtn = $("uploadBtn");
-let fileBtn = $("fileBtn");
-let fileType = $("fileType");
-let fileUpload = $("fileupload");
-let uploadPath = $("uploadPath");
-let checkFiledBtn = $("checkFiledBtn");
-let fileList = $("fileList");
-let fileListWrapper = $("fileListWrapper");
+let pt = $('uploadText')
+let uploadBtn = $("uploadBtn")
+let fileBtn = $("fileBtn")
+let fileType = $("fileType")
+let fileUpload = $("fileupload")
+let uploadPath = $("uploadPath")
+let fileList = $("fileList")
+let uploadListWrapper = $("uploadListWrapper")
+let checkFilesBtn = new toolBtn("checkFilesBtn")
+let cleanDiskBtn = new toolBtn("cleanDiskBtn")
+let disks = new diskGroup("diskGroup")
+
+/* disk related */
+let diskFreeTimer = null
+let diskFreeTimerFlag = true
 
 function isAjaxSuccess(xhr) {
     if (xhr.status >= 200 && xhr.status < 300) {
-        return true;
+        return true
     } else {
-        return false;
+        return false
     }
 }
 
@@ -105,9 +115,9 @@ function fileListDOMUpdate() {
             `
         }
         if (fileCheckList.length > 0) {
-            checkFiledBtn.disabled = false;
+            checkFilesBtn.enable();
         } else {
-            checkFiledBtn.disabled = true;
+            checkFilesBtn.disable();
         }
     } else {
         listHTML = "";
@@ -188,12 +198,12 @@ function checkFile() {
             fst.innerHTML = file.size + " bytes";
         }
         uploadBtn.disabled = false;
-        checkFiledBtn.disabled = false;
+        checkFilesBtn.enable();
     } else {
         fnt.innerHTML = "";
         fst.innerHTML = "";
         uploadBtn.disabled = true;
-        checkFiledBtn.disabled = true;
+        checkFilesBtn.disable();
     }
 };
 
@@ -214,7 +224,7 @@ function setUploadBtn(status) {
         pt.innerHTML = 'UPLOAD';
     } else if (status == "check_file") {
         uploadBtn.disabled = true;
-        checkFiledBtn.disabled = true;
+        checkFilesBtn.disable();
         fileChooseDisable(true);
         pt.innerHTML = 'CHECKING';
     } else if (status == "reset") {
@@ -235,11 +245,12 @@ function fileTypeChange() {
     cleanChosenFiles();
     updateFileBtnValue();
     if (typeVal == 0) {
-        checkFiledBtn.style.display = "none";
-        fileListWrapper.style.display = "none";
+
+        checkFilesBtn.hidden();
+        uploadListWrapper.style.display = "none";
     } else {
-        checkFiledBtn.style.display = "block";
-        fileListWrapper.style.display = "block";
+        checkFilesBtn.show();
+        uploadListWrapper.style.display = "block";
     }
     if (typeVal == 2) {
         fntd.innerHTML = "File Count:";
@@ -277,7 +288,7 @@ function upload() {
     let basePath = uploadPath.value == "" ? uploadPath.placeholder : uploadPath.value;
     setUploadBtn("origin");
     uploadBtn.disabled = true;
-    checkFiledBtn.disabled = true;
+    checkFilesBtn.disable();
     fileChooseDisable(true);
 
     if (fileType.value == '0') {
@@ -291,7 +302,7 @@ function upload() {
     xhr.onload = function () {
         if (!isAjaxSuccess(xhr)) {
             uploadSuccess(false, "function not supported")
-            checkFiledBtn.disabled = false;
+            checkFilesBtn.enable();
         } else {
             let resp = JSON.parse(xhr.responseText);
             if (resp.code == "0") {
@@ -311,11 +322,11 @@ function upload() {
                         });
                     }
                 } else {
-                    checkFiledBtn.disabled = false;
+                    checkFilesBtn.enable();
                     uploadSuccess(false);
                 }
             } else {
-                checkFiledBtn.disabled = false;
+                checkFilesBtn.enable();
                 uploadSuccess(false);
             }
         }
@@ -350,28 +361,30 @@ function handleDeviceSupport() {
         fileType.value = "0"
     }
 
-    if (_ds.diskclean) $('cleanDiskBtn').style.display = 'unset'
-    if (_ds.filecheck) $('checkFiledBtn').style.display = 'unset'
+    if (_ds.diskclean) cleanDiskBtn.show()
+    // if (_ds.filecheck) $('checkFilesBtn').style.display = 'unset'
     updateFileBtnValue()
 }
 
 function handshake() {
-    let version_tip = $("verNameTip");
+    let version_tip = $("verNameTip")
     waxios({
         method: 'get',
         url: '/cgi-bin/handshake',
         success: (data) => {
             if (data.code == 0) {
-                version_tip.innerHTML = data.handshake.version;
+                let _ds = deviceSupport
+                version_tip.innerHTML = data.handshake.version
 
-                if (data.handshake.support_firmwareupload != null) deviceSupport.firmwareupload = data.handshake.support_firmwareupload
-                if (data.handshake.support_fileupload != null) deviceSupport.fileupload = data.handshake.support_fileupload
-                if (data.handshake.support_directoryupload != null) deviceSupport.directoryupload = data.handshake.support_directoryupload
-                if (data.handshake.support_diskclean != null) deviceSupport.diskclean = data.handshake.support_diskclean
-                if (data.handshake.support_diskfree != null) deviceSupport.diskfree = data.handshake.support_diskfree
-                if (data.handshake.support_filecheck != null) deviceSupport.filecheck = data.handshake.support_filecheck
-                if (data.handshake.support_filelist != null) deviceSupport.filelist = data.handshake.support_filelist
-
+                if (data.handshake.support_firmwareupload != null) _ds.firmwareupload = data.handshake.support_firmwareupload
+                if (data.handshake.support_fileupload != null) _ds.fileupload = data.handshake.support_fileupload
+                if (data.handshake.support_directoryupload != null) _ds.directoryupload = data.handshake.support_directoryupload
+                if (data.handshake.support_diskclean != null) _ds.diskclean = data.handshake.support_diskclean
+                if (data.handshake.support_diskfree != null) _ds.diskfree = data.handshake.support_diskfree
+                if (data.handshake.support_filecheck != null) _ds.filecheck = data.handshake.support_filecheck
+                if (data.handshake.support_filelist != null) _ds.filelist = data.handshake.support_filelist
+                checkFilesBtn.setSupport(_ds.filecheck)
+                cleanDiskBtn.setSupport(_ds.diskclean)
                 handleDeviceSupport()
             } else {
                 version_tip.innerHTML = "read failed";
@@ -384,30 +397,21 @@ function handshake() {
 }
 
 function getDiskFree() {
-    let diskGroupInnerHTML = ''
+    if (!diskFreeTimerFlag)
+        return
+    diskFreeTimerFlag = false
     waxios({
         method: 'get',
         url: '/cgi-bin/get_diskfree',
+        timeout: 10000,
         success: (data) => {
             if (data.code == 0) {
-                for (let _i in data.disks) {
-                    let used = data.disks[_i].total - data.disks[_i].free
-                    let usedPercentage = Math.ceil(used / data.disks[_i].total * 100)
-                    diskGroupInnerHTML+=(`
-                    <div class="progressWrapper">
-                        <span>
-                            ${data.disks[_i].name}
-                        </span>
-                        <div class="progress">
-                            <div class="progressbar" style="width:${usedPercentage}%;">
-                            &nbsp; ${usedPercentage}% &nbsp;
-                            </div>
-                        </div>
-                    </div>
-                    `)
-                }
-                $('diskGroup').innerHTML = diskGroupInnerHTML
+                disks.setDisks(data.disks)
+                diskFreeTimerFlag = true
             }
+        },
+        error: () => {
+            diskFreeTimerFlag = true
         }
     })
 
@@ -484,8 +488,9 @@ function updateFileBtnValue() {
 }
 
 function init() {
-    handshake();
-    getDiskFree();
+    handshake()
+    getDiskFree()
+    window.setInterval(getDiskFree, 2000)
     fileUpload.onchange = checkFile;
     fileUpload.onclick = () => {
         cleanChosenFiles();
@@ -497,7 +502,7 @@ function init() {
     }
     updateFileBtnValue();
     uploadBtn.onclick = upload;
-    checkFiledBtn.onclick = () => {
+    checkFilesBtn.el.onclick = () => {
         fileUploadCheck(() => {
             webAlert("all files were checked successfully");
         }, (successCnt, failCnt) => {
@@ -512,4 +517,6 @@ function init() {
     uploadPath.oninput = basePathUpdate;
 }
 
-init();
+window.onload = () => {
+    init()
+}
