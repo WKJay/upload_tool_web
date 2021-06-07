@@ -364,16 +364,19 @@ function handleDeviceSupport() {
     if (!_ds.directoryupload) {
         $('dirUploadOption').style.display = 'none'
     } else {
+        $('dirUploadOption').style.display = 'unset'
         fileType.value = "2"
     }
     if (!_ds.fileupload) {
         $('fileUploadOption').style.display = 'none'
     } else {
+        $('fileUploadOption').style.display = 'unset'
         fileType.value = "1"
     }
     if (!_ds.firmwareupload) {
         $('firmUploadOption').style.display = 'none'
     } else {
+        $('firmUploadOption').style.display = 'unset'
         fileType.value = "0"
     }
 
