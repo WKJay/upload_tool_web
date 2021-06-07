@@ -28,7 +28,7 @@ let deviceSupport = {
     diskclean: false,
     diskfree: false,
     filecheck: false,
-    filelist: false
+    filelist: false //暂不支持
 }
 let fileCheckList = {
     length: 0,
@@ -84,13 +84,14 @@ function fileChooseDisable(flag) {
 }
 
 function fileListDOMUpdate() {
-    let listHTML = "";
-    let checkState = "";
-    let stateColor = "red";
-    let filePathShow = "";
+    let listHTML = ""
+    let checkState = ""
+    let stateColor = "red"
+    let filePathShow = ""
+    let _fileNameLen = 45
     if (fileType.value != 0) {
         for (let i in fileCheckList.files) {
-            let fileObj = fileCheckList.files[i];
+            let fileObj = fileCheckList.files[i]
             if (fileObj.checked == 0) { //未验证
                 checkState = "not checked"
                 stateColor = "gray"
@@ -102,15 +103,27 @@ function fileListDOMUpdate() {
                 stateColor = "red"
             }
 
-            if (fileObj.path.length > 25) {
-                filePathShow = fileObj.path.slice(0, 25) + "...";
+            if (deviceSupport.filecheck)
+                _fileNameLen = 25
+            else
+                _fileNameLen = 45
+
+            if (fileObj.path.length > _fileNameLen) {
+                filePathShow = fileObj.path.slice(0, _fileNameLen) + "..."
             } else {
                 filePathShow = fileObj.path;
             }
-            listHTML += `
+            if (deviceSupport.filecheck)
+                listHTML += `
             <tr>
                 <td style="width:60%"title=${fileObj.path}>${filePathShow}</td>
                 <td style="width:40%;color:${stateColor};text-align:right">${checkState}&nbsp;&nbsp;</td>
+            </tr>
+            `
+            else
+                listHTML += `
+            <tr>
+                <td style="width:60%"title=${fileObj.path}>${filePathShow}</td>
             </tr>
             `
         }
@@ -245,7 +258,6 @@ function fileTypeChange() {
     cleanChosenFiles();
     updateFileBtnValue();
     if (typeVal == 0) {
-
         checkFilesBtn.hidden();
         uploadListWrapper.style.display = "none";
     } else {
@@ -309,25 +321,29 @@ function upload() {
                 if (resp.filesize == uploadFileSize) {
                     if (fileType.value == '0') {
                         //固件升级无需校验文件
-                        uploadSuccess(true, 'firmware uploading success');
+                        uploadSuccess(true, 'firmware uploading success')
                     } else {
-                        setUploadBtn("check_file");
-                        //这里需要等待checklist异步更新完后才能进行检测
-                        fileCheckListinvoke(() => {
-                            fileUploadCheck(() => {
-                                uploadSuccess(true, 'upload successfully, all files have been checked');
-                            }, (successCnt, failCnt) => {
-                                uploadSuccess(false, failCnt + ' file(s) failed to check,please reupload');
-                            })
-                        });
+                        if (deviceSupport.filecheck) {
+                            setUploadBtn("check_file")
+                            //这里需要等待checklist异步更新完后才能进行检测
+                            fileCheckListinvoke(() => {
+                                fileUploadCheck(() => {
+                                    uploadSuccess(true, 'upload successfully, all files have been checked')
+                                }, (successCnt, failCnt) => {
+                                    uploadSuccess(false, failCnt + ' file(s) failed to check,please reupload')
+                                })
+                            });
+                        } else {
+                            uploadSuccess(true, 'upload successfully')
+                        }
                     }
                 } else {
-                    checkFilesBtn.enable();
-                    uploadSuccess(false);
+                    checkFilesBtn.enable()
+                    uploadSuccess(false)
                 }
             } else {
-                checkFilesBtn.enable();
-                uploadSuccess(false);
+                checkFilesBtn.enable()
+                uploadSuccess(false)
             }
         }
     };
