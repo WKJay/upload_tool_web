@@ -499,7 +499,7 @@ function diskClean() {
             },
             success: (data) => {
                 if (data.code == 0) {
-                    alert("clean" + ret + "success")
+                    alert("clean " + ret + " success")
                 } else {
                     alert(data.msg)
                 }

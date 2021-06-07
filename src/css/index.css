@@ -111,6 +111,7 @@ body {
     font-size: 14px;
     line-height: 21px;
     text-align: right;
+    box-shadow: -20px -2px 15px -13px white inset;
 }
 
 table {
