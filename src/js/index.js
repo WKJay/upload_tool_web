@@ -380,6 +380,11 @@ function handleDeviceSupport() {
         fileType.value = "0"
     }
 
+    if (_ds.diskfree) {
+        getDiskFree()
+        diskFreeTimer = window.setInterval(getDiskFree, 2000)
+    }
+
     if (_ds.diskclean) cleanDiskBtn.show()
     // if (_ds.filecheck) $('checkFilesBtn').style.display = 'unset'
     updateFileBtnValue()
@@ -529,8 +534,6 @@ function diskClean() {
 
 function init() {
     handshake()
-    getDiskFree()
-    diskFreeTimer = window.setInterval(getDiskFree, 2000)
     fileUpload.onchange = checkFile
     fileUpload.onclick = () => {
         cleanChosenFiles()
