@@ -3,10 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="icon"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAVBJREFUWEftls1Nw0AQRmdKoAPowPJsAeHKPQiqIRSDQFAELsC7cgfkTg8eNJGNVo69sz+OcrEvycE77+1nz6wRrnxhCb+qqltZ33XdMbdOkQAR/QjYWnt3LQEeBLI3kr1QwES0CWwJbAlsCayfgDHmoe/7G+fcmzZeUwYREe0R8bdt28avezYJiegbAHbMfHDOvYYkYgXqun5BxAMANNbae01gDwCfcpMmESPgwaXko7X2KygwzPgoCU1Agwtr8TCSZ6YlERKIgQcFYpJYEoiFqwKaxJxACjxKICQxFUiFRwssSfgCOfAkgTmJobdP7Tr+n2u10CxJ/iTzu2Om8Fmfa9M0WWCahAdIhic/An83kySy4EUCstgYs5Pf6QGjxa6O4pQCpff+vwNDG512dOmLmZvxpPUF3hHx6dJwqc/MH8655+J3YA3ZrDZcAzzW+AP84/ghR8Qg1gAAAABJRU5ErkJggg==">
     <title>Upload Tool</title>
 </head>
 
-<body style="background:rgb(231, 231, 231)">
+<body style="background:rgb(231, 231, 231);min-width: 420px;">
     <div class="container">
         <div class="card-head">
             <span class="c-head-content">Upload Tool</span>
@@ -15,10 +17,11 @@
         <div style="margin:10px 10px 10px 10px;">
             <div style="margin-top: 15px;">
                 <span>Type:</span>
-                <select name="fileType" id="fileType" style="width:100px">
-                    <option value="0">firmware</option>
-                    <option value="1">file</option>
-                    <option value="2">directory</option>
+                <select name="fileType" id="fileType">
+                    <option value="-1" hidden>not supported</option>
+                    <option value="0" style="display: none;" id="firmUploadOption">firmware</option>
+                    <option value="1" style="display: none;" id="fileUploadOption">file</option>
+                    <option value="2" style="display: none;" id="dirUploadOption">directory</option>
                 </select>
             </div>
 
@@ -32,7 +35,7 @@
                 <div class="detail">
                     <table>
                         <tr>
-                            <td>Current Version:</td>
+                            <td>Device Version:</td>
                             <td id="verNameTip"></td>
                         </tr>
                         <tr>
@@ -45,8 +48,26 @@
                         </tr>
                     </table>
                 </div>
+
+                <div class="detail" id="uploadListWrapper"
+                    style="max-height: 200px;overflow: auto;overflow-x:hidden;display: none;">
+                    <table id="fileList">
+
+                    </table>
+                </div>
             </div>
-            <button id="uploadBtn" disabled>
+            <div id="diskGroup">
+
+            </div>
+            <div class="opBtnGroup">
+                <button class="opBtn" id="cleanDiskBtn" style="display: none;">
+                    <div class="pg-content"> CLEAN DISK</div>
+                </button>
+                <button class="opBtn" id="checkFilesBtn" style="display: none;" disabled>
+                    <div class="pg-content"> CHECK FILES</div>
+                </button>
+            </div>
+            <button class="opBtn" id="uploadBtn" disabled>
                 <div class="pg-content" id="uploadText"> UPLOAD </div>
                 <div class="pg-body">
                     <div class="pg-inner" id="pg-bar"></div>
