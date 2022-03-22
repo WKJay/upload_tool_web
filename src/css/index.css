@@ -163,5 +163,6 @@ span {
 @media (max-width: 550px) {
     .container {
         width: 90%;
+        margin-top: 20vh;
     }
 }
